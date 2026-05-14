@@ -1,0 +1,111 @@
+{
+  "project": "AIBoardGameTTRPGGameMaster",
+  "marker": "// === Batch 01 Gaps & Frontend Mounts ===",
+  "features": [
+    {
+      "slug": "agentic-gm-co-pilot-that-runs-encounters-tracks-to",
+      "component": "AgenticGmCoPilotThatRunsEncountersTracksToPage",
+      "label": "Agentic GM co-pilot that runs encounters, tracks tone, and adapts to player choices in real time",
+      "endpoint": "/api/cf-agentic-gm-co-pilot-that-runs-encounters-tracks-to",
+      "kind": "cfs"
+    },
+    {
+      "slug": "rag-over-rulebooks-d-d-5e-pathfinder-etc-for-insta",
+      "component": "RagOverRulebooksDD5ePathfinderEtcForInstaPage",
+      "label": "RAG over rulebooks (D&D 5e, Pathfinder, etc.) for instant ruling answers with citations",
+      "endpoint": "/api/cf-rag-over-rulebooks-d-d-5e-pathfinder-etc-for-insta",
+      "kind": "cfs"
+    },
+    {
+      "slug": "streaming-narrative-engine-reacting-to-in-session-",
+      "component": "StreamingNarrativeEngineReactingToInSessionPage",
+      "label": "Streaming narrative engine reacting to in-session events with cinematic descriptions",
+      "endpoint": "/api/cf-streaming-narrative-engine-reacting-to-in-session-",
+      "kind": "cfs"
+    },
+    {
+      "slug": "white-label-vtt-for-indie-game-publishers-to-ship-",
+      "component": "WhiteLabelVttForIndieGamePublishersToShipPage",
+      "label": "White-label VTT for indie game publishers to ship branded play environments",
+      "endpoint": "/api/cf-white-label-vtt-for-indie-game-publishers-to-ship-",
+      "kind": "cfs"
+    },
+    {
+      "slug": "no-ai-npc-voice-generation-tts",
+      "component": "NoAiNpcVoiceGenerationTtsPage",
+      "label": "No AI NPC voice generation (TTS)",
+      "endpoint": "/api/gap-no-ai-npc-voice-generation-tts",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ai-map-dungeon-image-generation",
+      "component": "NoAiMapDungeonImageGenerationPage",
+      "label": "No AI map/dungeon image generation",
+      "endpoint": "/api/gap-no-ai-map-dungeon-image-generation",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ai-session-recap-summarization",
+      "component": "NoAiSessionRecapSummarizationPage",
+      "label": "No AI session-recap summarization",
+      "endpoint": "/api/gap-no-ai-session-recap-summarization",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-ai-rules-arbitration-co-pilot-during-play",
+      "component": "NoAiRulesArbitrationCoPilotDuringPlayPage",
+      "label": "No AI rules-arbitration co-pilot during play",
+      "endpoint": "/api/gap-no-ai-rules-arbitration-co-pilot-during-play",
+      "kind": "gap"
+    },
+    {
+      "slug": "frontend-pages-folder-is-empty-no-spa-ui-shipped",
+      "component": "FrontendPagesFolderIsEmptyNoSpaUiShippedPage",
+      "label": "Frontend pages folder is empty \u2014 no SPA UI shipped",
+      "endpoint": "/api/gap-frontend-pages-folder-is-empty-no-spa-ui-shipped",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-notification-system-for-session-reminders",
+      "component": "NoNotificationSystemForSessionRemindersPage",
+      "label": "No notification system for session reminders",
+      "endpoint": "/api/gap-no-notification-system-for-session-reminders",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-webhook-outbound-api",
+      "component": "NoWebhookOutboundApiPage",
+      "label": "No webhook outbound API",
+      "endpoint": "/api/gap-no-webhook-outbound-api",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-discord-voice-chat-integration",
+      "component": "NoDiscordVoiceChatIntegrationPage",
+      "label": "No Discord/voice-chat integration",
+      "endpoint": "/api/gap-no-discord-voice-chat-integration",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-virtual-tabletop-vtt-interactive-board",
+      "component": "NoVirtualTabletopVttInteractiveBoardPage",
+      "label": "No virtual tabletop (VTT) interactive board",
+      "endpoint": "/api/gap-no-virtual-tabletop-vtt-interactive-board",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-player-marketplace-for-homebrew-content",
+      "component": "NoPlayerMarketplaceForHomebrewContentPage",
+      "label": "No player-marketplace for homebrew content",
+      "endpoint": "/api/gap-no-player-marketplace-for-homebrew-content",
+      "kind": "gap"
+    },
+    {
+      "slug": "no-export-of-campaign-archives-pdf-json",
+      "component": "NoExportOfCampaignArchivesPdfJsonPage",
+      "label": "No export of campaign archives (PDF, JSON)",
+      "endpoint": "/api/gap-no-export-of-campaign-archives-pdf-json",
+      "kind": "gap"
+    }
+  ]
+}
