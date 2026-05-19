@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  displayName  String?
+  avatarUrl    String?
+  role         String   @default("player") // player, gm, admin
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaigns     Campaign[]     @relation("CampaignGM")
+  campaignPlayers CampaignPlayer[]
+  characters    Character[]
+  aiResults     AiResult[]
+  sessions      GameSession[]  @relation("SessionGM")
+  sessionLogs   SessionLog[]
+  combatActions CombatAction[]
+  narratives    Narrative[]
+
+  @@map("users")
+}
+
+model Campaign {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  genre       String   // fantasy, sci-fi, horror, modern, etc.
+  system      String   // D&D5e, Pathfinder, Call of Cthulhu, custom, board-game
+  setting     String?  // world/universe description
+  status      String   @default("active") // active, paused, completed, archived
+  maxPlayers  Int      @default(6)
+  gmId        String
+  gm          User     @relation("CampaignGM", fields: [gmId], references: [id])
+  imageUrl    String?
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  players     CampaignPlayer[]
+  sessions    GameSession[]
+  characters  Character[]
+  encounters  Encounter[]
+  loreEntries LoreEntry[]
+  npcs        Npc[]
+  aiResults   AiResult[]
+
+  @@map("campaigns")
+}
+
+model CampaignPlayer {
+  id         String   @id @default(uuid())
+  campaignId String
+  userId     String
+  role       String   @default("player") // player, co-gm
+  joinedAt   DateTime @default(now())
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
+  @@map("campaign_players")
+}
+
+model Character {
+  id            String   @id @default(uuid())
+  name          String
+  race          String?
+  class         String?
+  level         Int      @default(1)
+  background    String?
+  alignment     String?
+  backstory     String?
+  personality   String?
+  ideals        String?
+  bonds         String?
+  flaws         String?
+  stats         Json     @default("{}")  // STR, DEX, CON, INT, WIS, CHA
+  skills        Json     @default("{}")
+  equipment     Json     @default("[]")
+  spells        Json     @default("[]")
+  abilities     Json     @default("[]")
+  hp            Int      @default(10)
+  maxHp         Int      @default(10)
+  ac            Int      @default(10)
+  xp            Int      @default(0)
+  gold          Int      @default(0)
+  avatarUrl     String?
+  notes         String?
+  isActive      Boolean  @default(true)
+  campaignId    String?
+  userId        String
+  campaign      Campaign? @relation(fields: [campaignId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  combatActions CombatAction[]
+  narratives    Narrative[]
+  aiResults     AiResult[]
+
+  @@map("characters")
+}
+
+model GameSession {
+  id          String   @id @default(uuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  gmId        String
+  gm          User     @relation("SessionGM", fields: [gmId], references: [id])
+  title       String
+  description String?
+  status      String   @default("planned") // planned, active, completed
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  summary     String?  // AI-generated summary
+  xpAwarded   Int      @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  logs        SessionLog[]
+  encounters  Encounter[]
+  combats     Combat[]
+  aiResults   AiResult[]
+
+  @@map("game_sessions")
+}
+
+model SessionLog {
+  id        String   @id @default(uuid())
+  sessionId String
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // narration, action, dialogue, roll, system
+  content   String
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@map("session_logs")
+}
+
+model Encounter {
+  id          String   @id @default(uuid())
+  campaignId  String?
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+  sessionId   String?
+  session     GameSession? @relation(fields: [sessionId], references: [id])
+  name        String
+  description String?
+  difficulty  String   @default("medium") // trivial, easy, medium, hard, deadly
+  environment String?  // dungeon, forest, city, etc.
+  monsters    Json     @default("[]")
+  rewards     Json     @default("{}")
+  status      String   @default("pending") // pending, active, completed, skipped
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  combats     Combat[]
+  aiResults   AiResult[]
+
+  @@map("encounters")
+}
+
+model Combat {
+  id           String   @id @default(uuid())
+  encounterId  String?
+  encounter    Encounter? @relation(fields: [encounterId], references: [id])
+  sessionId    String?
+  session      GameSession? @relation(fields: [sessionId], references: [id])
+  name         String
+  round        Int      @default(1)
+  status       String   @default("active") // active, completed, fled
+  initiativeOrder Json  @default("[]")
+  combatants   Json     @default("[]") // full state of all combatants
+  conditions   Json     @default("{}") // active conditions per combatant
+  terrain      String?
+  notes        String?
+  startedAt    DateTime @default(now())
+  endedAt      DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  actions      CombatAction[]
+  aiResults    AiResult[]
+
+  @@map("combats")
+}
+
+model CombatAction {
+  id          String   @id @default(uuid())
+  combatId    String
+  combat      Combat   @relation(fields: [combatId], references: [id], onDelete: Cascade)
+  characterId String?
+  character   Character? @relation(fields: [characterId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  round       Int
+  actorName   String   // name of combatant (could be monster)
+  actionType  String   // attack, spell, ability, move, bonus, reaction, legendary
+  description String
+  rollResult  Json?    // dice roll details
+  outcome     String?  // hit, miss, critical, etc.
+  damage      Int?
+  createdAt   DateTime @default(now())
+
+  @@map("combat_actions")
+}
+
+model Npc {
+  id           String   @id @default(uuid())
+  campaignId   String
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name         String
+  race         String?
+  class        String?
+  role         String?  // merchant, villain, ally, neutral
+  personality  String?
+  backstory    String?
+  motivation   String?
+  secrets      String?
+  stats        Json     @default("{}")
+  equipment    Json     @default("[]")
+  dialogue     Json     @default("[]") // sample dialogue lines
+  location     String?
+  isAlive      Boolean  @default(true)
+  notes        String?
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  aiResults    AiResult[]
+
+  @@map("npcs")
+}
+
+model LoreEntry {
+  id          String   @id @default(uuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  category    String   // location, faction, history, item, deity, etc.
+  title       String
+  content     String
+  tags        String[] @default([])
+  isSecret    Boolean  @default(false)
+  revealedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("lore_entries")
+}
+
+model Narrative {
+  id           String   @id @default(uuid())
+  campaignId   String?
+  characterId  String?
+  character    Character? @relation(fields: [characterId], references: [id])
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  type         String   // scene, backstory, dream, vision, cutscene
+  prompt       String
+  content      String   // AI-generated narrative text
+  mood         String?
+  tags         String[] @default([])
+  isPublic     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  aiResults    AiResult[]
+
+  @@map("narratives")
+}
+
+model AiResult {
+  id           String   @id @default(uuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  campaignId   String?
+  campaign     Campaign? @relation(fields: [campaignId], references: [id])
+  sessionId    String?
+  session      GameSession? @relation(fields: [sessionId], references: [id])
+  encounterId  String?
+  encounter    Encounter? @relation(fields: [encounterId], references: [id])
+  combatId     String?
+  combat       Combat?   @relation(fields: [combatId], references: [id])
+  npcId        String?
+  npc          Npc?      @relation(fields: [npcId], references: [id])
+  characterId  String?
+  character    Character? @relation(fields: [characterId], references: [id])
+  narrativeId  String?
+  narrative    Narrative? @relation(fields: [narrativeId], references: [id])
+  feature      String   // encounter-gen, npc-gen, narrative, combat-advice, lore-gen, character-backstory, session-summary, rule-lookup
+  prompt       String
+  rawResponse  String
+  parsedResult Json?
+  model        String   @default("claude-3-5-sonnet-20241022")
+  tokensUsed   Int?
+  durationMs   Int?
+  createdAt    DateTime @default(now())
+
+  @@map("ai_results")
+}
+
+model BoardGame {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  minPlayers  Int      @default(2)
+  maxPlayers  Int      @default(4)
+  complexity  String   @default("medium") // light, medium, heavy
+  category    String?  // strategy, cooperative, deck-building, etc.
+  bggId       String?  // Board Game Geek ID
+  imageUrl    String?
+  rules       String?  // rules reference text
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions    BoardGameSession[]
+  aiResults   BoardGameAiResult[]
+
+  @@map("board_games")
+}
+
+model BoardGameSession {
+  id          String   @id @default(uuid())
+  gameId      String
+  game        BoardGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  players     Json     @default("[]") // player names and scores
+  winnerId    String?
+  notes       String?
+  playedAt    DateTime @default(now())
+  durationMin Int?
+
+  aiResults   BoardGameAiResult[]
+
+  @@map("board_game_sessions")
+}
+
+model BoardGameAiResult {
+  id          String   @id @default(uuid())
+  gameId      String?
+  game        BoardGame? @relation(fields: [gameId], references: [id])
+  sessionId   String?
+  session     BoardGameSession? @relation(fields: [sessionId], references: [id])
+  feature     String   // rules-lookup, strategy-advice, scenario-gen, variant-rules
+  prompt      String
+  rawResponse String
+  parsedResult Json?
+  model       String   @default("claude-3-5-sonnet-20241022")
+  tokensUsed  Int?
+  durationMs  Int?
+  createdAt   DateTime @default(now())
+
+  @@map("board_game_ai_results")
+}
