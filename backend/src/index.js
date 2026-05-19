@@ -55,6 +55,7 @@ app.use('/api/narratives', require('./routes/narratives'));
 app.use('/api/boardgames', require('./routes/boardgames'));
 app.use('/api/dice', require('./routes/dice'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/custom-views', require('./routes/customViews')); // bespoke GM views: hex board, dice PMF, char sheet PDF, encounter builder
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -94,6 +95,7 @@ app.use('/api/rulebook-rag', require('./routes/rulebookRag')); // apply pass 6 �
 app.use('/api/streaming-narrative', require('./routes/streamingNarrative')); // apply pass 6 — audit custom suggestion
 
 app.use('/api/white-label-vtt', require('./routes/whiteLabelVtt')); // apply pass 6 — audit custom suggestion
+
 app.listen(PORT, () => {
   console.log(`[server] AI BoardGame / TTRPG Game Master running on port ${PORT}`);
   console.log(`[server] Environment: ${process.env.NODE_ENV || 'development'}`);
