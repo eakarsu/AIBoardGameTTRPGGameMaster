@@ -56,6 +56,7 @@ app.use('/api/boardgames', require('./routes/boardgames'));
 app.use('/api/dice', require('./routes/dice'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/custom-views', require('./routes/customViews')); // bespoke GM views: hex board, dice PMF, char sheet PDF, encounter builder
+app.use('/api/encounter-pacing', require('./routes/encounterPacing'));
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

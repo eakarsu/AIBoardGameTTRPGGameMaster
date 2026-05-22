@@ -2,8 +2,11 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { prisma } = require('../lib/prisma');
 const { parseAIJson } = require('../lib/parseAIJson');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const MODEL = 'claude-3-5-sonnet-20241022';
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  ...(process.env.ANTHROPIC_BASE_URL ? { baseURL: process.env.ANTHROPIC_BASE_URL } : {}),
+});
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
 
 /**
  * Core AI call with timing, token tracking, and persistence.

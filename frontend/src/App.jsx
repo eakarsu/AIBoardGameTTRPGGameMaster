@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import CustomViewsPage from './pages/CustomViewsPage.jsx';
+import EncounterPacingPage from './pages/EncounterPacingPage.jsx';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
 
 function Sidebar({ onLogout, user }) {
   const loc = useLocation();
@@ -31,6 +35,7 @@ function Sidebar({ onLogout, user }) {
       <nav style={{ flex: 1 }}>
         {link('/', 'Dashboard')}
         {link('/custom-views', 'GM Views')}
+        {link('/encounter-pacing', 'Encounter Pacing')}
       </nav>
       <div style={{ borderTop: '1px solid #1e293b', paddingTop: 12 }}>
         <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>
@@ -90,6 +95,9 @@ export default function App() {
   if (!user) {
     return (
       <Routes>
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
@@ -103,6 +111,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/custom-views" element={<CustomViewsPage />} />
+          <Route path="/encounter-pacing" element={<EncounterPacingPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
