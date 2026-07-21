@@ -364,3 +364,39 @@ model BoardGameAiResult {
 
   @@map("board_game_ai_results")
 }
+
+model GovernedSessionSnapshot {
+  id             String   @id @default(uuid())
+  campaignId     String
+  sessionId      String
+  idempotencyKey String
+  requestHash    String
+  status         String
+  snapshot       Json
+  createdBy      String
+  approvedBy     String?
+  version        Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  events GovernedSessionEvent[]
+
+  @@unique([campaignId, idempotencyKey])
+  @@index([campaignId, status])
+  @@map("governed_session_snapshots")
+}
+
+model GovernedSessionEvent {
+  id         String   @id @default(uuid())
+  workflowId String
+  workflow   GovernedSessionSnapshot @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  actorId    String
+  eventType  String
+  fromStatus String?
+  toStatus   String
+  evidenceHash String
+  createdAt  DateTime @default(now())
+
+  @@index([workflowId, createdAt])
+  @@map("governed_session_events")
+}

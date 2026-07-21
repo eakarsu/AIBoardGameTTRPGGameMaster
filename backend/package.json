@@ -10,6 +10,7 @@
     "db:generate": "npx prisma generate",
     "db:seed": "node src/db/seed.js",
     "db:studio": "npx prisma studio"
+    ,"test": "node --test test/*.test.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",

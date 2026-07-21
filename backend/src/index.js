@@ -1,12 +1,13 @@
 require('dotenv').config();
 
 // ── Environment validation ──────────────────────────────────────────────────
-const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'ANTHROPIC_API_KEY'];
+const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET'];
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
   console.error(`[startup] Missing required environment variables: ${missing.join(', ')}`);
   process.exit(1);
 }
+if (process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters');
 
 const express = require('express');
 const helmet = require('helmet');
@@ -57,6 +58,7 @@ app.use('/api/dice', require('./routes/dice'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/custom-views', require('./routes/customViews')); // bespoke GM views: hex board, dice PMF, char sheet PDF, encounter builder
 app.use('/api/encounter-pacing', require('./routes/encounterPacing'));
+app.use('/api/governed-sessions', require('./routes/governedSessions'));
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -115,17 +117,3 @@ process.on('SIGINT', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
-
-
-// === Batch 01 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-ai-npc-voice-generation-tts', require('./routes/gap_no_ai_npc_voice_generation_tts'));
-app.use('/api/gap-no-ai-map-dungeon-image-generation', require('./routes/gap_no_ai_map_dungeon_image_generation'));
-app.use('/api/gap-no-ai-session-recap-summarization', require('./routes/gap_no_ai_session_recap_summarization'));
-app.use('/api/gap-no-ai-rules-arbitration-co-pilot-during-play', require('./routes/gap_no_ai_rules_arbitration_co_pilot_during_play'));
-app.use('/api/gap-frontend-pages-folder-is-empty-no-spa-ui-shipped', require('./routes/gap_frontend_pages_folder_is_empty_no_spa_ui_shipped'));
-app.use('/api/gap-no-notification-system-for-session-reminders', require('./routes/gap_no_notification_system_for_session_reminders'));
-app.use('/api/gap-no-webhook-outbound-api', require('./routes/gap_no_webhook_outbound_api'));
-app.use('/api/gap-no-discord-voice-chat-integration', require('./routes/gap_no_discord_voice_chat_integration'));
-app.use('/api/gap-no-virtual-tabletop-vtt-interactive-board', require('./routes/gap_no_virtual_tabletop_vtt_interactive_board'));
-app.use('/api/gap-no-player-marketplace-for-homebrew-content', require('./routes/gap_no_player_marketplace_for_homebrew_content'));
-app.use('/api/gap-no-export-of-campaign-archives-pdf-json', require('./routes/gap_no_export_of_campaign_archives_pdf_json'));
