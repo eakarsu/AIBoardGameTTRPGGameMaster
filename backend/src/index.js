@@ -99,10 +99,27 @@ app.use('/api/streaming-narrative', require('./routes/streamingNarrative')); // 
 
 app.use('/api/white-label-vtt', require('./routes/whiteLabelVtt')); // apply pass 6 — audit custom suggestion
 
-app.listen(PORT, () => {
-  console.log(`[server] AI BoardGame / TTRPG Game Master running on port ${PORT}`);
-  console.log(`[server] Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`[server] CORS origin: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
+async function startServer() {
+  const attempts = 60;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      app.listen(PORT, () => {
+        console.log(`[server] AI BoardGame / TTRPG Game Master running on port ${PORT}`);
+        console.log(`[server] Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`[server] CORS origin: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
+      });
+      return;
+    } catch (error) {
+      if (attempt === attempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+}
+
+startServer().catch((error) => {
+  console.error(`[startup] Database unavailable: ${error.message}`);
+  process.exit(1);
 });
 
 // ── Graceful shutdown ───────────────────────────────────────────────────────

@@ -1,12 +1,25 @@
-const Anthropic = require('@anthropic-ai/sdk');
 const { prisma } = require('../lib/prisma');
 const { parseAIJson } = require('../lib/parseAIJson');
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-  ...(process.env.ANTHROPIC_BASE_URL ? { baseURL: process.env.ANTHROPIC_BASE_URL } : {}),
-});
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
+const OPENROUTER_BASE_URL = (process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/$/, '');
+const MODEL = process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini';
+
+async function createCompletion(system, messages) {
+  if (!process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is required');
+  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.CLIENT_URL || 'http://127.0.0.1',
+      'X-Title': 'AI BoardGame TTRPG Game Master',
+    },
+    body: JSON.stringify({ model: MODEL, max_tokens: 2048, messages: [{ role: 'system', content: system }, ...messages] }),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || body.error) throw new Error(body.error?.message || `OpenRouter request failed with status ${response.status}`);
+  return body;
+}
 
 /**
  * Core AI call with timing, token tracking, and persistence.
@@ -19,16 +32,13 @@ async function callAI({ prompt, systemPrompt, feature, userId, campaignId, sessi
   const messages = [{ role: 'user', content: prompt }];
   const system = systemPrompt || 'You are an expert AI Game Master for tabletop RPGs and board games. Always respond with valid JSON unless instructed otherwise.';
 
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 2048,
-    system,
-    messages,
-  });
+  const response = await createCompletion(system, messages);
 
   const durationMs = Date.now() - start;
-  const rawResponse = response.content[0]?.text || '';
-  const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0);
+  const rawResponse = response.choices?.[0]?.message?.content || '';
+  if (!rawResponse) throw new Error('OpenRouter returned an empty AI response');
+  const tokensUsed = response.usage?.total_tokens ||
+    (response.usage?.prompt_tokens || 0) + (response.usage?.completion_tokens || 0);
   const parsedResult = parseAIJson(rawResponse);
 
   if (isBoardGame) {
@@ -40,7 +50,7 @@ async function callAI({ prompt, systemPrompt, feature, userId, campaignId, sessi
         prompt,
         rawResponse,
         parsedResult,
-        model: MODEL,
+        model: response.model || MODEL,
         tokensUsed,
         durationMs,
       },
@@ -60,7 +70,7 @@ async function callAI({ prompt, systemPrompt, feature, userId, campaignId, sessi
         prompt,
         rawResponse,
         parsedResult,
-        model: MODEL,
+        model: response.model || MODEL,
         tokensUsed,
         durationMs,
       },

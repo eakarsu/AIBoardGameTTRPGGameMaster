@@ -8,13 +8,15 @@ async function main() {
   console.log('[seed] Starting database seed...');
 
   // ── Users ──────────────────────────────────────────────────────────────────
-  const passwordHash = await bcrypt.hash('password123', 12);
+  const demoPassword = process.env.DEMO_PASSWORD || 'password123';
+  const demoEmail = process.env.DEMO_EMAIL || 'gm@gamemaster.ai';
+  const passwordHash = await bcrypt.hash(demoPassword, 12);
 
   const gm = await prisma.user.upsert({
-    where: { email: 'gm@gamemaster.ai' },
-    update: {},
+    where: { username: 'dungeon_master' },
+    update: { email: demoEmail, passwordHash },
     create: {
-      email: 'gm@gamemaster.ai',
+      email: demoEmail,
       username: 'dungeon_master',
       displayName: 'The Dungeon Master',
       passwordHash,
@@ -402,10 +404,7 @@ async function main() {
   console.log('[seed] Narrative created');
 
   console.log('[seed] Database seeded successfully!');
-  console.log('[seed] Login credentials:');
-  console.log('[seed]   GM:      gm@gamemaster.ai      / password123');
-  console.log('[seed]   Player1: player1@gamemaster.ai / password123');
-  console.log('[seed]   Player2: player2@gamemaster.ai / password123');
+  console.log('[seed] Demo identities updated from the private runtime environment.');
 }
 
 main()
