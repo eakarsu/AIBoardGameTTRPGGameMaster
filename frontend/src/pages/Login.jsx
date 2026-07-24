@@ -49,6 +49,15 @@ export default function Login({ onLogin }) {
           padding: 8, background: '#7f1d1d', color: '#fee2e2',
           borderRadius: 6, marginBottom: 12, fontSize: 13,
         }}>{err}</div>}
+        <button
+          type="button"
+          onClick={() => { setEmail(import.meta.env.VITE_DEMO_EMAIL || ''); setPassword(import.meta.env.VITE_DEMO_PASSWORD || ''); }}
+          disabled={!import.meta.env.VITE_DEMO_EMAIL || !import.meta.env.VITE_DEMO_PASSWORD}
+          aria-label="Auto Fill Demo Credentials"
+          style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
+        >
+          Auto Fill Demo Credentials
+        </button>
         <button className="btn" type="submit" disabled={busy} style={{ width: '100%' }}>
           {busy ? 'Signing in...' : 'Sign in'}
         </button>
