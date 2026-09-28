@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 export default function Login({ onLogin }) {
-  const [email, setEmail] = useState('gm@gamemaster.ai');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
@@ -33,7 +33,7 @@ export default function Login({ onLogin }) {
       <form onSubmit={submit} className="card" style={{ width: 380 }}>
         <h2 style={{ marginTop: 0, color: '#f8fafc' }}>GM Master Login</h2>
         <p style={{ color: '#94a3b8', fontSize: 13 }}>
-          Default GM credentials are prefilled. Sign in to access GM Views.
+          Fill the local demo account, then click Sign In to access GM Views.
         </p>
         <div style={{ marginBottom: 12 }}>
           <div className="label">Email</div>
@@ -51,15 +51,25 @@ export default function Login({ onLogin }) {
         }}>{err}</div>}
         <button
           type="button"
-          onClick={() => { setEmail(import.meta.env.VITE_DEMO_EMAIL || ''); setPassword(import.meta.env.VITE_DEMO_PASSWORD || ''); }}
-          disabled={!import.meta.env.VITE_DEMO_EMAIL || !import.meta.env.VITE_DEMO_PASSWORD}
+          onClick={async () => {
+            setErr('');
+            try {
+              const response = await fetch('/api/auth/demo-credentials', { cache: 'no-store' });
+              const credentials = await response.json();
+              if (!response.ok) throw new Error(credentials.error || 'Demo credentials are unavailable.');
+              setEmail(credentials.email);
+              setPassword(credentials.password);
+            } catch (error) {
+              setErr(error.message);
+            }
+          }}
           aria-label="Auto Fill Demo Credentials"
           style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
         >
           Auto Fill Demo Credentials
         </button>
         <button className="btn" type="submit" disabled={busy} style={{ width: '100%' }}>
-          {busy ? 'Signing in...' : 'Sign in'}
+          {busy ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
     </div>
