@@ -26,6 +26,7 @@ export default function GameStateBoard() {
         const r = await fetch('/api/custom-views/game-state', { headers: authHeaders() });
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed to load board');
+        if (!Array.isArray(d.hexes) || !Array.isArray(d.party) || !Array.isArray(d.enemies) || !d.legend || typeof d.legend !== 'object') throw new Error('Game board response is invalid.');
         setState(d);
       } catch (e) { setErr(e.message); }
     })();

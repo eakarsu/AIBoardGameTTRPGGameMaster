@@ -28,7 +28,8 @@ export default function EncounterBuilder() {
         const r = await fetch(`/api/custom-views/monsters?terrain=${terrain}`, { headers: authHeaders() });
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed');
-        setMonsterList(d.monsters || []);
+        if (!Array.isArray(d.monsters)) throw new Error('Monster catalog response is invalid.');
+        setMonsterList(d.monsters);
       } catch (e) { setErr(e.message); }
     })();
   }, [step, terrain]);
@@ -145,6 +146,7 @@ export default function EncounterBuilder() {
                   <th style={{ textAlign: 'left', padding: 8 }}>CR</th>
                   <th style={{ textAlign: 'left', padding: 8 }}>XP</th>
                   <th style={{ textAlign: 'left', padding: 8 }}>Type</th>
+                  <th style={{ textAlign: 'left', padding: 8 }}>Terrain fit</th>
                   <th style={{ textAlign: 'left', padding: 8 }}>Count</th>
                 </tr>
               </thead>
@@ -155,6 +157,7 @@ export default function EncounterBuilder() {
                     <td style={{ padding: 8 }}>{m.cr}</td>
                     <td style={{ padding: 8 }}>{m.xp}</td>
                     <td style={{ padding: 8 }}>{m.type}</td>
+                    <td style={{ padding: 8 }}>{m.terrains?.includes(terrain) ? 'Native' : 'Other terrain'}</td>
                     <td style={{ padding: 8 }}>
                       <input className="input" type="number" min={0} max={20}
                         value={picks[m.id] || 0}

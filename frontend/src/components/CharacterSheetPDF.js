@@ -19,8 +19,9 @@ export default function CharacterSheetPDF() {
         const r = await fetch('/api/custom-views/characters', { headers: authHeaders() });
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed');
-        setChars(d.characters || []);
-        if (d.characters?.[0]) setPick(d.characters[0].id);
+        if (!Array.isArray(d.characters)) throw new Error('Character roster response is invalid.');
+        setChars(d.characters);
+        if (d.characters[0]) setPick(d.characters[0].id);
       } catch (e) { setErr(e.message); }
     })();
   }, []);

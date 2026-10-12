@@ -59,8 +59,20 @@ app.use('/api/ai', require('./routes/ai'));
 app.use('/api/custom-views', require('./routes/customViews')); // bespoke GM views: hex board, dice PMF, char sheet PDF, encounter builder
 app.use('/api/encounter-pacing', require('./routes/encounterPacing'));
 app.use('/api/governed-sessions', require('./routes/governedSessions'));
+app.use('/api/gm-copilot', require('./routes/agenticGmCopilot')); // apply pass 6 — audit custom suggestion
+app.use('/api/rulebook-rag', require('./routes/rulebookRag')); // apply pass 6 — audit custom suggestion
+app.use('/api/streaming-narrative', require('./routes/streamingNarrative')); // apply pass 6 — audit custom suggestion
+app.use('/api/white-label-vtt', require('./routes/whiteLabelVtt')); // apply pass 6 — audit custom suggestion
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
+
+// Advisory AI reports only; native execution and approval routes stay unchanged.
+const aiWorkspaceSupport = require("../aiWorkspaceAdapters.cjs");
+const aiWorkspaceDatabase = aiWorkspaceSupport.prismaQueryClient(require("./lib/prisma.js").prisma);
+app.use('/api/report-workspace', require("../aiWorkspace.cjs").createAIWorkspaceRouter({
+  pool: aiWorkspaceDatabase, authenticateToken: require("./middleware/auth.js").authenticate,
+  aiRateLimiter: aiWorkspaceSupport.createWorkspaceLimiter(), features: require("../aiWorkspaceFeatures.json"),
+}));
 app.use((req, res) => {
   res.status(404).json({ error: `Route not found: ${req.method} ${req.path}` });
 });
@@ -90,14 +102,6 @@ app.use((err, req, res, next) => {
 
 // ── Start server ────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT, 10) || 3001;
-
-app.use('/api/gm-copilot', require('./routes/agenticGmCopilot')); // apply pass 6 — audit custom suggestion
-
-app.use('/api/rulebook-rag', require('./routes/rulebookRag')); // apply pass 6 — audit custom suggestion
-
-app.use('/api/streaming-narrative', require('./routes/streamingNarrative')); // apply pass 6 — audit custom suggestion
-
-app.use('/api/white-label-vtt', require('./routes/whiteLabelVtt')); // apply pass 6 — audit custom suggestion
 
 async function startServer() {
   const attempts = 60;

@@ -13,6 +13,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
+const { prisma } = require('../lib/prisma');
 
 // ── Deterministic PRNG so repeated calls return the same synthesized world ──
 function seeded(seed) {
@@ -225,25 +226,31 @@ const SYNTH_CHARACTERS = [
   },
 ];
 
-router.get('/characters', authenticate, (req, res) => {
-  res.json({
-    success: true,
-    characters: SYNTH_CHARACTERS.map((c) => ({
-      id: c.id, name: c.name, race: c.race, class: c.class, level: c.level,
-    })),
-  });
+router.get('/characters', authenticate, async (req, res) => {
+  try {
+    const saved = await prisma.character.findMany({
+      where: { userId: req.user.id }, orderBy: { createdAt: 'asc' }, take: 100,
+      select: { id: true, name: true, race: true, class: true, level: true },
+    });
+    res.json({ success: true, characters: [
+      ...SYNTH_CHARACTERS.map(({ id, name, race, class: characterClass, level }) => ({ id, name, race, class: characterClass, level })),
+      ...saved,
+    ] });
+  } catch (err) { res.status(503).json({ error: 'Character roster is unavailable.' }); }
 });
 
 let PDFDocument;
 try { PDFDocument = require('pdfkit'); } catch { PDFDocument = null; }
 
-router.post('/character-sheet', authenticate, (req, res) => {
+router.post('/character-sheet', authenticate, async (req, res) => {
   try {
     if (!PDFDocument) {
       return res.status(503).json({ error: 'pdfkit not installed on the server.' });
     }
     const { characterId } = req.body || {};
-    const ch = SYNTH_CHARACTERS.find((c) => c.id === characterId) || SYNTH_CHARACTERS[0];
+    const ch = SYNTH_CHARACTERS.find((c) => c.id === characterId) ||
+      (typeof characterId === 'string' ? await prisma.character.findFirst({ where: { id: characterId, userId: req.user.id } }) : null);
+    if (!ch) return res.status(404).json({ error: 'Character not found.' });
 
     const doc = new PDFDocument({ size: 'LETTER', margin: 36 });
     res.setHeader('Content-Type', 'application/pdf');
@@ -382,8 +389,10 @@ function encounterMultiplier(count) {
 
 router.get('/monsters', authenticate, (req, res) => {
   const terrain = String(req.query.terrain || '').toLowerCase();
+  // Keep the full catalog visible; terrain matches come first so the GM can
+  // still compare other creatures without reducing the record table to a few rows.
   const list = terrain
-    ? MONSTERS.filter((m) => m.terrains.includes(terrain))
+    ? [...MONSTERS].sort((a, b) => Number(b.terrains.includes(terrain)) - Number(a.terrains.includes(terrain)))
     : MONSTERS;
   res.json({
     success: true,

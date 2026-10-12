@@ -403,6 +403,9 @@ async function main() {
 
   console.log('[seed] Narrative created');
 
+  await require('./seedChecklistData').ensureChecklistRows(prisma, { gm, campaign, session, catan });
+  console.log('[seed] Checklist demo lists contain at least 15 additive fictional records');
+
   console.log('[seed] Database seeded successfully!');
   console.log('[seed] Demo identities updated from the private runtime environment.');
 }

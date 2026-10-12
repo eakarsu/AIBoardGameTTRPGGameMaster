@@ -1,3 +1,4 @@
+import AIReportLibrary from "./components/AIReportLibrary";
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, Link, useLocation } from 'react-router-dom';
 import Login from './pages/Login.jsx';
@@ -45,7 +46,7 @@ function Sidebar({ onLogout, user }) {
           Logout
         </button>
       </div>
-    </aside>
+    <AIReportLibrary /></aside>
   );
 }
 
