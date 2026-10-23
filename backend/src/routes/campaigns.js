@@ -34,6 +34,18 @@ router.get('/', async (req, res) => {
     ],
   };
   if (req.query.status) where.status = req.query.status;
+  // Feature pack 28B: search on the main record list (combined with ownership via AND).
+  const search = String(req.query.search || req.query.q || '').trim();
+  if (search) {
+    where.AND = [{ OR: [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { genre: { contains: search, mode: 'insensitive' } },
+      { system: { contains: search, mode: 'insensitive' } },
+    ] }];
+  }
+  if (req.query.genre) where.genre = req.query.genre;
+  if (req.query.system) where.system = req.query.system;
 
   const [data, total] = await Promise.all([
     prisma.campaign.findMany({

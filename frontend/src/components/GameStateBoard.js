@@ -19,6 +19,7 @@ export default function GameStateBoard() {
   const [state, setState] = useState(null);
   const [err, setErr] = useState('');
   const [hover, setHover] = useState(null);
+  const [selectedToken, setSelectedToken] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -68,7 +69,7 @@ export default function GameStateBoard() {
             />
           ))}
           {state.party.map((p) => (
-            <g key={p.id} onMouseEnter={() => setHover(p)} onMouseLeave={() => setHover(null)}>
+            <g key={p.id} onMouseEnter={() => setHover(p)} onMouseLeave={() => setHover(null)} onClick={() => setSelectedToken(p)} style={{ cursor: 'pointer' }}>
               <circle cx={p.pixel.x} cy={p.pixel.y} r={size * 0.55} fill={p.color}
                 stroke="#fff" strokeWidth={2} />
               <text x={p.pixel.x} y={p.pixel.y + 3} fontSize={10} fill="#0f172a"
@@ -78,7 +79,7 @@ export default function GameStateBoard() {
             </g>
           ))}
           {state.enemies.map((e) => (
-            <g key={e.id} onMouseEnter={() => setHover(e)} onMouseLeave={() => setHover(null)}>
+            <g key={e.id} onMouseEnter={() => setHover(e)} onMouseLeave={() => setHover(null)} onClick={() => setSelectedToken(e)} style={{ cursor: 'pointer' }}>
               <polygon
                 points={`${e.pixel.x},${e.pixel.y - size * 0.55} ${e.pixel.x + size * 0.55},${e.pixel.y} ${e.pixel.x},${e.pixel.y + size * 0.55} ${e.pixel.x - size * 0.55},${e.pixel.y}`}
                 fill={e.color} stroke="#fca5a5" strokeWidth={2}
@@ -115,6 +116,45 @@ export default function GameStateBoard() {
           )}
         </div>
       </div>
+      <div style={{ marginTop: 16 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #1e293b' }}>
+              <th style={{ textAlign: 'left', padding: 8 }}>Token</th>
+              <th style={{ textAlign: 'left', padding: 8 }}>Role / CR</th>
+              <th style={{ textAlign: 'left', padding: 8 }}>HP</th>
+              <th style={{ textAlign: 'left', padding: 8 }}>Position</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...state.party, ...state.enemies].map((tok) => (
+              <tr key={tok.id} onClick={() => setSelectedToken(tok)} style={{ borderBottom: '1px solid #1e293b', cursor: 'pointer' }}>
+                <td style={{ padding: 8, fontWeight: 600 }}>{tok.name}</td>
+                <td style={{ padding: 8 }}>{tok.class || `CR ${tok.cr}`}</td>
+                <td style={{ padding: 8 }}>{tok.hp} / {tok.maxHp}</td>
+                <td style={{ padding: 8 }}>({tok.q}, {tok.r})</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {selectedToken && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setSelectedToken(null)}>
+          <div role="dialog" aria-modal="true" style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: 24, width: '90%', maxWidth: 480, color: '#f8fafc' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginTop: 0 }}>{selectedToken.name}</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, margin: '16px 0' }}>
+              {Object.entries(selectedToken).filter(([k]) => k !== 'pixel').map(([k, v]) => (
+                <div key={k}><div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase' }}>{k}</div><div style={{ fontSize: 14 }}>{String(v ?? '—')}</div></div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn" onClick={() => setSelectedToken(null)}>Edit</button>
+              <button className="btn btn-secondary" onClick={() => setSelectedToken(null)}>Delete</button>
+              <button className="btn btn-secondary" onClick={() => setSelectedToken(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

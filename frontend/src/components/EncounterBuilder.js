@@ -16,6 +16,7 @@ export default function EncounterBuilder() {
   const [terrain, setTerrain] = useState('forest');
   const [budget, setBudget] = useState('hard');
   const [monsterList, setMonsterList] = useState([]);
+  const [selectedMonster, setSelectedMonster] = useState(null);
   const [picks, setPicks] = useState({}); // {id: count}
   const [preview, setPreview] = useState(null);
   const [err, setErr] = useState('');
@@ -152,7 +153,7 @@ export default function EncounterBuilder() {
               </thead>
               <tbody>
                 {monsterList.map((m) => (
-                  <tr key={m.id} style={{ borderTop: '1px solid #1e293b' }}>
+                  <tr key={m.id} onClick={() => setSelectedMonster(m)} style={{ borderTop: '1px solid #1e293b', cursor: 'pointer' }}>
                     <td style={{ padding: 8 }}>{m.name}</td>
                     <td style={{ padding: 8 }}>{m.cr}</td>
                     <td style={{ padding: 8 }}>{m.xp}</td>
@@ -216,6 +217,23 @@ export default function EncounterBuilder() {
             <button className="btn" onClick={() => { setStep(1); setPicks({}); setPreview(null); }}>
               Start over
             </button>
+          </div>
+        </div>
+      )}
+      {selectedMonster && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setSelectedMonster(null)}>
+          <div role="dialog" aria-modal="true" style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 12, padding: 24, width: '90%', maxWidth: 480, color: '#f8fafc' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginTop: 0 }}>{selectedMonster.name}</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, margin: '16px 0' }}>
+              {Object.entries(selectedMonster).map(([k, v]) => (
+                <div key={k}><div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase' }}>{k}</div><div style={{ fontSize: 14 }}>{Array.isArray(v) ? v.join(', ') : String(v ?? '—')}</div></div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn" onClick={() => setSelectedMonster(null)}>Edit</button>
+              <button className="btn btn-secondary" onClick={() => setSelectedMonster(null)}>Delete</button>
+              <button className="btn btn-secondary" onClick={() => setSelectedMonster(null)}>Cancel</button>
+            </div>
           </div>
         </div>
       )}

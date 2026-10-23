@@ -63,6 +63,7 @@ app.use('/api/gm-copilot', require('./routes/agenticGmCopilot')); // apply pass 
 app.use('/api/rulebook-rag', require('./routes/rulebookRag')); // apply pass 6 — audit custom suggestion
 app.use('/api/streaming-narrative', require('./routes/streamingNarrative')); // apply pass 6 — audit custom suggestion
 app.use('/api/white-label-vtt', require('./routes/whiteLabelVtt')); // apply pass 6 — audit custom suggestion
+app.use('/api/feature-pack', require('./routes/featurePack28B')); // feature pack 28B
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 

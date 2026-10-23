@@ -69,6 +69,23 @@ export default function Login({ onLogin }) {
           borderRadius: 6, marginBottom: 12, fontSize: 13,
         }}>{err}</div>}
         <button
+            type="button"
+            aria-label="Fill demo credentials"
+            onClick={async () => {
+              if (import.meta.env.VITE_DEMO_EMAIL && import.meta.env.VITE_DEMO_PASSWORD) { setEmail(import.meta.env.VITE_DEMO_EMAIL); setPassword(import.meta.env.VITE_DEMO_PASSWORD); setErr(''); return; }
+              try {
+                const res = await fetch('/api/auth/demo-credentials', { cache: 'no-store' });
+                const data = await res.json().catch(() => ({}));
+                if (data.email && data.password) { setEmail(data.email); setPassword(data.password); setErr(''); return; }
+              } catch {}
+              setErr('Demo credentials are not configured for this environment.');
+            }}
+            disabled={busy}
+            style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
+          >
+            Fill demo credentials
+          </button>
+        <button
           type="button"
           onClick={loginAsDemo}
           disabled={busy}
